@@ -1,0 +1,53 @@
+#cloudbuild.yaml
+
+# Build docker image and deploy to artifacts repository
+steps:
+  # Fetch env from Secrets Manager
+  - name: gcr.io/cloud-builders/gcloud
+    entrypoint: 'bash'
+    args: [ '-c', "gcloud secrets versions access latest --secret=name-of-secret-$BRANCH_NAME-env --format='get(payload.data)' | tr '_-' '/+' | base64 -d > .env" ]
+
+  # Build the docker container
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [
+      'build',
+      '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/$_SERVICE_NAME/$BRANCH_NAME-image',
+      '--cache-from', 'us-central1-docker.pkg.dev/$PROJECT_ID/$_SERVICE_NAME/$BRANCH_NAME-image',
+      '.'
+    ]
+
+  # Push the container image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'us-central1-docker.pkg.dev/$PROJECT_ID/$_SERVICE_NAME/$BRANCH_NAME-image']
+
+  # Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - '$_SERVICE_NAME-$BRANCH_NAME'
+      - '--project=$PROJECT_ID'
+      - '--image=us-central1-docker.pkg.dev/$PROJECT_ID/$_SERVICE_NAME/$BRANCH_NAME-image'
+      - '--region=$_DEPLOY_REGION'
+      - '--platform=managed'
+      - '--memory=$_INSTANCE_MEMORY'
+      - '--cpu=1'
+      - '--port=80'
+      - '--concurrency=100'
+      - '--service-account=...SERVICE_ACCOUNT_EMAIL...'
+
+timeout: 1200s
+
+images:
+  - 'us-central1-docker.pkg.dev/$PROJECT_ID/$_SERVICE_NAME/$BRANCH_NAME-image'
+
+options:
+  substitutionOption: ALLOW_LOOSE
+  machineType: 'E2_HIGHCPU_8'
+substitutions:
+  _SERVICE_NAME: ...SERVICE_NAME...
+  _DEPLOY_REGION: us-central1
+tags:
+  - gcp-cloud-build-deploy-cloud-run
+  - gcp-cloud-build-deploy-cloud-run-managed
