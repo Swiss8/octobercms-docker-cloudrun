@@ -15,7 +15,9 @@ return [
     |
     */
 
-    'default' => 'local',
+    'default' => env('FILE_SYSTEM', 'local'),
+    'upload_path' => env('STORAGE_UPLOAD_PATH', '/storage/app/uploads'),
+    'media_path' => env('STORAGE_MEDIA_PATH', '/storage/app/media'),
 
     /*
     |--------------------------------------------------------------------------
@@ -64,6 +66,26 @@ return [
             'container' => 'your-container',
             'endpoint'  => 'https://identity.api.rackspacecloud.com/v2.0/',
             'region'    => 'IAD',
+        ],
+
+        'gcs' => [
+            'driver' => 'gcs',
+            'project_id' => env('GOOGLE_CLOUD_PROJECT_ID', 'your-project-id'),
+            'key_file' => [
+                'type' => env('GOOGLE_CLOUD_ACCOUNT_TYPE'),
+                'private_key_id' => env('GOOGLE_CLOUD_PRIVATE_KEY_ID'),
+                'private_key' => env('GOOGLE_CLOUD_PRIVATE_KEY'),
+                'client_email' => env('GOOGLE_CLOUD_CLIENT_EMAIL'),
+                'client_id' => env('GOOGLE_CLOUD_CLIENT_ID'),
+                'auth_uri' => env('GOOGLE_CLOUD_AUTH_URI'),
+                'token_uri' => env('GOOGLE_CLOUD_TOKEN_URI'),
+                'auth_provider_x509_cert_url' => env('GOOGLE_CLOUD_AUTH_PROVIDER_CERT_URL'),
+                'client_x509_cert_url' => env('GOOGLE_CLOUD_CLIENT_CERT_URL'),
+            ],
+            'bucket' => env('GOOGLE_CLOUD_STORAGE_BUCKET', 'your-bucket'),
+            'path_prefix' => env('GOOGLE_CLOUD_STORAGE_PATH_PREFIX', null), // optional: /default/path/to/apply/in/bucket
+            'storage_api_uri' => env('GOOGLE_CLOUD_STORAGE_API_URI', null), // see: Public URLs below
+            'visibility' => 'public', // optional: public|private
         ],
 
     ],

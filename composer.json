@@ -41,7 +41,8 @@
         "ext-zip": "*",
         "mmucklo/krumo": "*",
         "ext-json": "*",
-        "wikimedia/composer-merge-plugin": "dev-master"
+        "wikimedia/composer-merge-plugin": "dev-master",
+        "superbalist/laravel-google-cloud-storage": "^2.2"
     },
     "require-dev": {
         "phpunit/phpunit": "^8.4|^9.3.3",
