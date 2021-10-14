@@ -1,0 +1,68 @@
+name: October CMS Website
+
+on:
+    push:
+        branches:
+            - master
+    pull_request:
+        branches:
+            - master
+
+jobs:
+    website-github-tests:
+        runs-on: ubuntu-latest
+        services:
+          web_test_mysql:
+            image: mysql:5.7
+            env:
+              MYSQL_DATABASE: oc_website
+              MYSQL_ALLOW_EMPTY_PASSWORD: yes
+            ports:
+              - 33306:3306
+            options: >-  # Set health checks to wait until mysql database has started (it takes some seconds to start)
+              --health-cmd="mysqladmin ping"
+              --health-interval=10s
+              --health-timeout=5s
+              --health-retries=3
+        steps:
+            - uses: actions/checkout@v2
+            - name: Copy .env
+              run: php -r "file_exists('.env') || copy('.env.example', '.env');"
+
+            - name: Copy .env.testing
+              run: php -r "file_exists('.env.testing') || copy('.env.example', '.env.testing');"
+
+            - name: Ensure using PHP v7.4
+              uses: shivammathur/setup-php@v2
+              with:
+                php-version: '7.4'
+
+            - name: Get Composer Cache Directory 2
+              id: composer-cache
+              run: |
+                echo "::set-output name=dir::$(composer config cache-files-dir)"
+
+            - uses: actions/cache@v2
+              id: actions-cache
+              with:
+                path: '${{ steps.composer-cache.outputs.dir }}'
+                key: '${{ runner.os }}-composer-${{ hashFiles(''**/composer.lock'') }}'
+                restore-keys: |
+                  ${{ runner.os }}-composer-
+
+            - name: Cache PHP dependencies
+              uses: actions/cache@v2
+              with:
+                  path: vendor
+                  key: '${{ runner.OS }}-build-${{ hashFiles(''**/composer.lock'') }}'
+
+            - name: Install composer dependencies
+              if: steps.vendor-cache.outputs.cache-hit != 'true'
+              run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist --ignore-platform-reqs
+
+            - name: Execute tests (Unit and Feature tests) via PHPUnit
+              env:
+                  APP_KEY: ${{ secrets.APP_KEY }}
+                  API_KEY: ${{ secrets.API_KEY }}
+                  MANDRILL_API_KEY: ${{ secrets.MANDRILL_API_KEY }}
+              run: vendor/bin/phpunit
