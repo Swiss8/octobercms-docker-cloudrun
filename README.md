@@ -26,6 +26,15 @@ I also use cloud CDN to access all assets, that's where the .env GOOGLE_CLOUD_ST
 ## Laravel Passport
 I've built a plugin to incorporate full Passport OAuth2 functionality into October CMS as if it were laravel.  I won't include into a public repo, but contact me for info if needed.
 
+## Tests
+Testing is very similar to Laravel.
+
+I have included example setup in the Demo plugin.
+
+`BaseTestCase.php` may not be needed in all cases.  Laravel Factories are not included in October CMS by default, so they are registered here.
+
+The setup method can also be used to register other plugins or bind instances to the container for testing.
+
 ## Deploying
 I deploy through GitHub and have actions there to run tests.  I then build my image with Google Cloud Build, which is triggered by a push to master in my repo.  ref cloudbuild.yaml
 
