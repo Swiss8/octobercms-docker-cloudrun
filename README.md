@@ -1,7 +1,7 @@
 # October CMS w/ Docker
 
 ## Development
-I run using the docker-compose.yml which uses Dockerfile and other config from the .docker folder
+I run using the `docker-compose.yml` which uses Dockerfile and other config from the .docker folder.  `docker-compose.yml` contains config for development and references development files in `.docker/dev`. The primary `./Dockerfile` is used to build for production.  This is very similar to `./.docker/dev/Dockerfile`, the main difference being XDebug is not included in production.
 
 I'm no good with SSL certificates, but like to use them in development to run as close to production as possible.  I'm used to using Laravel Valet, so I create certificates in Valet then copy them across.  5 minute manual setup at the beginning of the project but it works really well.
 
@@ -36,7 +36,7 @@ I have included example setup in the Demo plugin.
 The setup method can also be used to register other plugins or bind instances to the container for testing.
 
 ## Deploying
-I deploy through GitHub and have actions there to run tests.  I then build my image with Google Cloud Build, which is triggered by a push to master in my repo.  ref cloudbuild.yaml
+I deploy through GitHub and have actions there to run tests. See `.github/workflows`.  I then build my image with Google Cloud Build, which is triggered by a push to master in my repo.  ref cloudbuild.yaml
 
 This build config does a few things, first, it gets my production .env file which I store in Secrets Manager.  Then builds the production container from ./Dockerfile.  I then push and store the image in Artifact Registry.  Finally, I deploy a new Cloud Run instance from that image.
 
